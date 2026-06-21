@@ -39,67 +39,108 @@ A good classification task requires clear, observable differences between catego
 
 200 labeled examples are sufficient because the signal is strong, not buried in ambiguity
 
+# Project Plan: Joe Rogan Instagram Content Classifier
+
+---
+
 ## Labels
 
-### Label 1: Depth Content
+### Label 2: Lifestyle / General Interest
 
-A post containing substantive narrative (typically 2+ sentences) that shares a personal experience, detailed opinion, event explanation, or knowledge-based content — the post has genuine information value beyond promotion or reaction.
+A post about everyday life, personal experiences, or general observations — these are glimpses into Joe Rogan's daily world rather than announcements, reactions, or promotional content. They focus on food, family, dogs, travel, restaurants, personal routines, or casual thoughts. The tone is reflective, appreciative, or simply observational.
+
+**Key signal:** Mentions daily activities — cooking, meals, specific restaurants, family members (marshallmaerogan), dogs, weather, travel, or personal routines. Uses descriptive language about food or experiences. No technical vocabulary. No promotional phrases ("available now," "new episode"). No fight terminology. Length varies but content is personal and relatable.
 
 **Examples:**
-> "Went down to Ways2Well and did plasmapheresis— this is the stuff they pulled out of my blood. That yellow-orange liquid is plasma — it carries a lot of the inflammatory proteins, toxins, and byproducts that build up over time. They separate it out, remove what they don't want, and replace it so your system can function cleaner."
+> "Elk steaks for dinner. Covered them in olive oil and traegergrills blackened Saskatchewan rub. Cooked it 225 until it got an internal temperature of 125 then finished it on a cast iron skillet. Served it with Kimchi. It was delicious."
 
-> "Update on wolves in Aspen, Colorado. Back in February I posted about wolves being released on my friend's ranch... since then just on his neighbor's property they've had 7 calves and one cow killed by wolves."
+> "A beautiful day on the trails with my boy marshallmaerogan"
 
-### Label 2: Podcast Promotion
+> "Torrisi in NYC. About as good as it's possible for Italian food to be. Fucking sensational."
 
-A post whose primary purpose is announcing a new JRE episode — it follows a predictable template, introduces a guest with superlatives, and directs audiences to streaming platforms with minimal substantive content about the conversation itself.
+> "Broke in my new traegergrills with some elk back straps."
+
+---
+
+### Label 2: Politics / Social Commentary
+
+A post expressing a political opinion, commenting on current events, or advocating for a cause. These posts are usually medium-length, state a clear position, and may reference politicians, policies, or social issues. The tone is serious or urgent. Often involves advocacy or critique of government actions.
+
+**Key signal:** Contains "Trump," "Biden," "RFK," "election," "president," "government," "public land," "wolf reintroduction," "vaccine," or "Ibogaine." Often includes a call to action or strong stance on a controversial topic.
+
+**Examples:**
+> "We can't let them sell public land. It's a short sighted solution with massive long term consequences. Public land is ours. All of ours, and they're trying to sell it without our consent."
+
+> "Remote viewing is real. Aliens exist, and the USA has at least 10 crafts that are from non human intelligence. All according to renowned physicist Hal Puthoff."
+
+---
+
+### Label 3: Podcast Promotion
+
+A post announcing a new JRE episode. These follow a predictable template: introduce a guest with superlatives, briefly describe the episode (often vaguely), and direct to streaming platforms. The primary purpose is driving listeners, not sharing substantive content. The same structure repeats across hundreds of posts.
+
+**Key signal:** Contains "available now on spotify," "new episode," "episode available now," or "available on youtube." Follows the template: "The great and powerful X... Episode available now." Lacks detailed content about the actual conversation.
 
 **Examples:**
 > "The great and powerful harlandwilliams is a one of a kind awesome human being. New episode available now on spotify and everywhere else."
 
-> "My good friend of many years therealjeffreyross has a new special out on netflix. It's an amazing one man show that he's been working on for years. Our podcast is available now on spotify and everywhere else."
-
-### Label 3: Lightweight Reaction
-
-A post consisting of short phrases, exclamations, or emotional reactions with virtually no informational content — these are impulse posts that convey excitement, disbelief, or general sentiment without substantive text.
-
-**Examples:**
-> "Let's fucking go"
-
-> "What a fucking night! ufcfreedom250"
+> "Episode 2509 calebhammercomposer drops financial science joeroganexperience available now on spotify"
 
 ---
 
 ## Hard Edge Cases
 
-### The Ambiguous Case: "Hybrid Posts"
+### Ambiguous Case 1: "UFC Post with Podcast Promotion"
 
-The most challenging edge case is posts that **mix promotional language with substantive content**.
+**Example:**
+> "Fun times on the Fight Companion! With mattserrabjj brendanschaub bryancallen and jamievernon. Available now on spotify."
+
+**Why it's ambiguous:**
+- "Fight Companion" and fighter names → signals UFC
+- "Available now on spotify" → signals Podcast Promotion
+- Short length, no episode number or guest introduction
+
+**Resolution:** The primary purpose is promoting the Fight Companion podcast episode. The UFC content is the *topic*, not the *purpose*. The post exists to drive listeners, not to discuss a fight → **Label 3 (Podcast Promotion)** .
+
+---
+
+### Ambiguous Case 2: "Political Post That Happens to Be a Podcast Promotion"
 
 **Example:**
 > "I had a great time talking to zuck, and marshallmaerogan and I got to try out some awesome new AR devices that Meta is working on. Episode is out now on Spotify!"
 
 **Why it's ambiguous:**
-- Contains promotional phrase → signals Label 2
-- Contains substantive narrative → signals Label 1
+- Describes AR devices and Meta → could be Politics (tech policy) or just tech chat
+- Ends with "Episode out now" → signals Podcast Promotion
+- No explicit political stance
 
-### How to Handle It During Annotation
+**Resolution:** The post is primarily a description of a fun experience (trying AR devices). The podcast promotion is secondary. There is no political stance being expressed → **Label 3 (Podcast Promotion)** (it's promoting an episode that happens to discuss tech).
 
-Apply the **"Information Value Test"** :
+---
 
-> *If I removed the promotional phrase, would this post still contain something worth reading?*
+### Ambiguous Case 3: "Health Post That Looks Like Politics"
 
-- If **yes** → Label 1 (Depth Content) — the post stands on its own as interesting content
-- If **no** → Label 2 (Podcast Promotion) — the promotion is the only reason this post exists
+**Example:**
+> "One dose of Ibogaine has an 80% rate of freeing people from addiction... A 2024 Stanford-led trial found magnesium-ibogaine treatment led to 88% reduction in PTSD symptoms."
 
-For the example above: Removing the promotional phrase still leaves a description of testing AR devices → **Label 1 (Depth Content)** .
+**Why it's ambiguous:**
+- Discusses Ibogaine therapy → could be health/wellness content (which I'm not explicitly labeling)
+- Could be seen as political advocacy for drug policy reform
+- No explicit call to action or political figure
 
-### Documentation Practice
+**Resolution:** This post is about vaccine, thus controversial topics, so it would be **Label 2: Politics / Social Commentary**
+---
 
-All ambiguous cases will be logged in `error_analysis.md` with:
+### How to Handle Ambiguous Cases During Annotation
+
+**Step 1:** Log the case in `error_analysis.md` with:
 - The original text
 - The label chosen and why
 - The runner-up label and why it was rejected
+
+**Step 2:** For each ambiguous case, note which signal dominated the decision. This provides material for the failure mode analysis section of the final report.
+
+**Step 3:** If more than 10% of posts are ambiguous, revisit the taxonomy definition. A good taxonomy has clear boundaries; if too many posts are borderline, the labels themselves may need adjustment.
 
 ---
 
@@ -113,21 +154,22 @@ All data comes from the provided CSV file `joerogan_post_metadata.csv`, which co
 
 | Label | Target Count | Justification |
 |-------|-------------|---------------|
-| Depth Content | 70-80 | Rich, substantive posts are the "signal" in the noise |
-| Podcast Promotion | 50-60 | The most frequent type of post based on data inspection |
-| Lightweight Reaction | 50-60 | Short, emotional posts with minimal content |
+| UFC / MMA | 60-70 | Joe Rogan's most frequent content type — fight commentary, event reactions, athlete shoutouts |
+| Politics / Social Commentary | 40-50 | Significant minority of posts — election commentary, policy opinions, advocacy |
+| Podcast Promotion | 50-60 | Formulaic announcements of new episodes |
+| Health / Biohacking / Lifestyle | 30-40 | Posts about plasma, hunting, cooking, diet, fitness |
 
 **Total: ~200 examples**
 
 ### If a Label is Underrepresented
 
-If after reviewing the data I find fewer than 40 examples of any label:
+If after reviewing the data I find fewer than 30 examples of any label:
 
 1. **First check:** Review borderline cases to see if misclassification is artificially reducing count
-2. **If still low:** Consider merging the underrepresented label with a related label (e.g., if Lightweight Reaction is too small, merge with Podcast Promotion into a "Shallow Content" category)
-3. **Document the decision:** Explain why the label was rare and how handling it addresses the "mutually exclusive and exhaustive" requirement
+2. **If still low:** Consider whether the label can be split/merged, or whether the data simply doesn't contain enough examples for a fair evaluation
+3. **Document the decision:** Explain what adjustments were made and why
 
-Based on review of the data, all three labels appear sufficiently represented.
+Based on review of the data, all labels appear sufficiently represented.
 
 ### Train/Validation/Test Split
 
@@ -143,11 +185,11 @@ Based on review of the data, all three labels appear sufficiently represented.
 
 **Why this is the right choice:**
 
-The dataset has potentially **unbalanced labels** (Depth Content may appear less frequently than Podcast Promotion). Accuracy would be misleading — if the model simply predicts "Podcast Promotion" for everything, it might still achieve ~40% accuracy, which looks acceptable but is actually useless.
+The dataset has potentially **unbalanced labels** (some topics appear more frequently than others). Accuracy would be misleading — if the model simply predicts "UFC" for everything, it might still achieve ~35-40% accuracy, which looks acceptable but is actually useless.
 
 Macro F1-score calculates F1 per label independently and averages them **without weighting by frequency**. This means:
 - The model cannot "cheat" by ignoring rare labels
-- Poor performance on Depth Content will visibly hurt the score
+- Poor performance on Politics posts will visibly hurt the score
 - True performance across all categories is transparent
 
 ### Secondary Metrics:
@@ -156,15 +198,15 @@ Macro F1-score calculates F1 per label independently and averages them **without
 |--------|---------|
 | **Per-class Precision** | Tells me if labels are being over-predicted (false positives) |
 | **Per-class Recall** | Tells me if labels are being missed (false negatives) |
-| **Confusion Matrix** | Reveals which labels are being confused with each other (e.g., Depth Content vs. Podcast Promotion) |
+| **Confusion Matrix** | Reveals which labels are being confused with each other (e.g., UFC vs. Podcast Promotion, Politics vs. Health) |
 
 ### Why These Metrics Are the Right Ones for This Task
 
 | Scenario | What It Would Look Like | Why It Matters |
 |----------|------------------------|----------------|
-| Model predicts "Promotion" for everything | Accuracy ~40%, Macro F1 ~0.27 | Looks decent on accuracy, but fails entirely on two labels — a deployed model would flag substantive posts as promotion |
-| Model performs well on 2 labels, fails on 1 | Accuracy ~70%, Macro F1 ~0.55 | Accuracy hides the failure on Depth Content — users would miss the most valuable posts |
-| Balanced performance across all 3 | Accuracy ~65%, Macro F1 ~0.65 | True balanced performance — the goal for a usable tool |
+| Model predicts "UFC" for everything | Accuracy ~35%, Macro F1 ~0.20 | Looks terrible on F1 — the metric exposes the failure immediately |
+| Model performs well on 2 labels, fails on 1 | Accuracy ~75%, Macro F1 ~0.58 | Accuracy hides the failure on the rare label — users would miss important Politics content |
+| Balanced performance across all 3 | Accuracy ~70%, Macro F1 ~0.70 | True balanced performance — the goal for a usable tool |
 
 ---
 
@@ -174,23 +216,23 @@ Macro F1-score calculates F1 per label independently and averages them **without
 
 | Metric | Target | Justification |
 |--------|--------|---------------|
-| Macro F1 | **≥ 0.70** | Indicates balanced performance across all three categories |
+| Macro F1 | **≥ 0.70** | Indicates balanced performance across all four categories |
 | Per-class Recall | **≥ 0.65** for each | No label is systematically missed — users won't lose valuable content |
 | Per-class Precision | **≥ 0.65** for each | No label is systematically over-predicted — users won't be flooded with misclassified content |
 
 ### What This Means in Practice
 
 If these targets are hit:
-- The model can reliably identify Depth Content posts for a "what's worth reading" filter
-- The model can filter out promotional noise without flagging substantive content
-- A community tool could trust the classification to surface interesting posts to users
+- The model can reliably filter Joe Rogan's posts by topic
+- Users can follow only UFC content, or only Politics content, or skip Podcast Promotions
+- A community tool could present a "topic filter" to help fans find what they care about
 
 ### What I Would Accept as "Good Enough"
 
 Even with Macro F1 around **0.55–0.65**, the model could still be useful as:
 
-1. **A pre-filter** — labeling obvious promotion posts for removal, leaving the more ambiguous cases to human review
-2. **A trend monitor** — tracking shifts in content mix over time (what percentage of posts are Depth Content vs. Promotion vs. Reaction) even if individual labels aren't perfect
+1. **A pre-filter** — labeling obvious UFC or Podcast Promotion posts, leaving ambiguous cases to human review
+2. **A trend monitor** — tracking shifts in content mix over time (what percentage of posts are UFC vs. Politics vs. Promotion)
 3. **A supportive tool** — not replacing human judgment, but helping users triage content more efficiently
 
 ### Minimum Viable Performance
@@ -202,6 +244,8 @@ Even with Macro F1 around **0.55–0.65**, the model could still be useful as:
 | Per-class Precision | ≥ 0.50 for each | Below 0.50, more than half of predictions are wrong, causing user frustration |
 
 **Final judgment:** Macro F1 ≥ 0.65 with all per-class metrics ≥ 0.60 is the threshold where I would consider this classifier genuinely useful for real-world application.
+
+---
 
 ## AI Tool Plan
 
@@ -217,7 +261,7 @@ This project uses AI tools at three specific points in the workflow. Each is a t
 
 1. Take the label definitions, key signals, and hard edge cases from this document
 2. Prompt the LLM (Claude or ChatGPT) with:
-   > "Here are three label definitions for classifying Joe Rogan Instagram posts. Generate 10 posts that sit at the boundary between two labels — cases where the definition alone doesn't make the classification obvious. For each, explain which label you'd choose and why."
+   > "Here are four label definitions for classifying Joe Rogan Instagram posts: UFC/MMA, Politics/Social Commentary, and Podcast Promotion. Generate 10 posts that sit at the boundary between two labels — cases where the definition alone doesn't make the classification obvious. For each, explain which label you'd choose and why."
 3. Review each generated example and attempt to classify it using my definitions
 4. If any generated example is genuinely unclassifiable or fits two labels equally well:
    - The label definitions need tightening
@@ -225,7 +269,7 @@ This project uses AI tools at three specific points in the workflow. Each is a t
 
 **Why this matters:**
 
-The edge cases I've already identified (Substantive Promotion, Reaction with a Guest Name, etc.) come from my reading of the data. But there may be edge cases I haven't thought of. Stress-testing with synthetic examples forces me to confront weaknesses in the taxonomy before I've invested hours in annotating 200 real examples. It's a low-cost way to catch definitional problems early.
+The edge cases I've already identified come from my reading of the data. But there may be edge cases I haven't thought of. Stress-testing with synthetic examples forces me to confront weaknesses in the taxonomy before I've invested hours in annotating 200 real examples. It's a low-cost way to catch definitional problems early.
 
 **What I'll do with problematic generated examples:**
 
@@ -271,7 +315,7 @@ I'll use the `classifier.py` pipeline with the zero-shot LLM (Llama-3.3-70B via 
 1. Run the fine-tuned DistilBERT model on the test set (30 examples)
 2. Collect all misclassified examples (the model's label + the true label)
 3. Feed the list of misclassifications to an LLM (Claude or ChatGPT) with the prompt:
-   > "Here are misclassified examples from a text classifier trained to label Joe Rogan Instagram posts as Depth Content, Podcast Promotion, or Lightweight Reaction. For each, the model's prediction and the true label are shown. Identify 3–5 patterns or failure modes. Are certain labels consistently confused? Does the model rely on the wrong signals?"
+   > "Here are misclassified examples from a text classifier trained to label Joe Rogan Instagram posts as UFC/MMA, Politics/Social Commentary, Podcast Promotion, or Health/Biohacking/Lifestyle. For each, the model's prediction and the true label are shown. Identify 3–5 patterns or failure modes. Are certain labels consistently confused? Does the model rely on the wrong signals?"
 4. Use the LLM's identified patterns as a starting point for my own analysis
 5. Verify each pattern against the actual data:
    - Manually review 3–5 examples per pattern to confirm it exists
@@ -280,10 +324,10 @@ I'll use the `classifier.py` pipeline with the zero-shot LLM (Llama-3.3-70B via 
 
 **What I'll look for (verification checklist):**
 
-- Are Depth Content posts with short length consistently misclassified as Lightweight Reaction?
-- Are Podcast Promotion posts missing the "available now" template (e.g., live event announcements) being miscategorized?
-- Are substantive posts ending with promotional phrases being misclassified as Promotion?
-- Is the model over-relying on a specific key signal (length, specific words) and missing context?
+- Are UFC posts with short exclamations being misclassified as Podcast Promotion?
+- Are Politics posts being confused with Health posts (e.g., Ibogaine advocacy as either)?
+- Are Podcast Promotion posts being misclassified as UFC because they mention fighters?
+- Does the model over-rely on single keywords and miss context?
 
 **Why this matters:**
 
