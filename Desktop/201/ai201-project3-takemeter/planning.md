@@ -202,3 +202,108 @@ Even with Macro F1 around **0.55–0.65**, the model could still be useful as:
 | Per-class Precision | ≥ 0.50 for each | Below 0.50, more than half of predictions are wrong, causing user frustration |
 
 **Final judgment:** Macro F1 ≥ 0.65 with all per-class metrics ≥ 0.60 is the threshold where I would consider this classifier genuinely useful for real-world application.
+
+## AI Tool Plan
+
+This project uses AI tools at three specific points in the workflow. Each is a tool-assisted step where AI generates suggestions, but human judgment makes the final call.
+
+---
+
+### 1. Label Stress-Testing
+
+**Before annotating 200 examples**, I will use an LLM to stress-test the label definitions by generating synthetic boundary cases.
+
+**Process:**
+
+1. Take the label definitions, key signals, and hard edge cases from this document
+2. Prompt the LLM (Claude or ChatGPT) with:
+   > "Here are three label definitions for classifying Joe Rogan Instagram posts. Generate 10 posts that sit at the boundary between two labels — cases where the definition alone doesn't make the classification obvious. For each, explain which label you'd choose and why."
+3. Review each generated example and attempt to classify it using my definitions
+4. If any generated example is genuinely unclassifiable or fits two labels equally well:
+   - The label definitions need tightening
+   - Adjust the definitions or add a new key signal before annotation begins
+
+**Why this matters:**
+
+The edge cases I've already identified (Substantive Promotion, Reaction with a Guest Name, etc.) come from my reading of the data. But there may be edge cases I haven't thought of. Stress-testing with synthetic examples forces me to confront weaknesses in the taxonomy before I've invested hours in annotating 200 real examples. It's a low-cost way to catch definitional problems early.
+
+**What I'll do with problematic generated examples:**
+
+- If an example is genuinely unclassifiable, I'll add a new hard edge case section for it
+- If a generated example reveals that two labels overlap, I'll revise the definitions to clarify the boundary
+- I'll document which label definitions were revised based on stress-testing
+
+**Output:** A section in `planning.md` titled "Label Stress-Test Results" listing the generated examples and which definitions were tightened as a result.
+
+---
+
+### 2. Annotation Assistance
+
+**Decision:** I will **not** use an LLM to pre-label examples.
+
+**Reasoning:**
+
+This is a small-scale annotation task (200 examples) with labels that are designed to be simple enough for consistent human judgment. Introducing LLM pre-labeling adds overhead (tracking which examples were pre-labeled, verifying correctness) without a clear benefit.
+
+The key risk is that pre-labeling creates a bias in the final dataset. If I review LLM-generated labels, I'm more likely to accept or reject them in ways that align with the LLM's error patterns. This is the same problem that affects "AI-assisted annotation" in academic settings — the human reviewer becomes less critical.
+
+**Alternative approach:**
+
+I will annotate all 200 examples manually, using the taxonomy and edge case resolutions defined above. This ensures:
+- Consistent application of the taxonomy
+- No hidden bias from pre-labeling
+- Clear documentation of my own annotation process
+
+**If I change my mind later (pre-labeling for pilot batch):**
+
+I'll use the `classifier.py` pipeline with the zero-shot LLM (Llama-3.3-70B via Groq) to generate initial predictions on 20 pilot examples. I'll then review these predictions against my own manual labels, using the agreement/disagreement to refine the taxonomy further. This would be disclosed as:
+
+> "20 pilot examples were pre-labeled by the zero-shot classifier (Llama-3.3-70B) and reviewed by the annotator. The final taxonomy was adjusted based on disagreements. The remaining 180 examples were annotated without AI assistance."
+
+---
+
+### 3. Failure Analysis
+
+**After the model evaluation**, I will use an LLM to help identify patterns in the wrong predictions.
+
+**Process:**
+
+1. Run the fine-tuned DistilBERT model on the test set (30 examples)
+2. Collect all misclassified examples (the model's label + the true label)
+3. Feed the list of misclassifications to an LLM (Claude or ChatGPT) with the prompt:
+   > "Here are misclassified examples from a text classifier trained to label Joe Rogan Instagram posts as Depth Content, Podcast Promotion, or Lightweight Reaction. For each, the model's prediction and the true label are shown. Identify 3–5 patterns or failure modes. Are certain labels consistently confused? Does the model rely on the wrong signals?"
+4. Use the LLM's identified patterns as a starting point for my own analysis
+5. Verify each pattern against the actual data:
+   - Manually review 3–5 examples per pattern to confirm it exists
+   - If the pattern is real, include it in the evaluation report with specific examples
+   - If the pattern is an LLM hallucination, discard it
+
+**What I'll look for (verification checklist):**
+
+- Are Depth Content posts with short length consistently misclassified as Lightweight Reaction?
+- Are Podcast Promotion posts missing the "available now" template (e.g., live event announcements) being miscategorized?
+- Are substantive posts ending with promotional phrases being misclassified as Promotion?
+- Is the model over-relying on a specific key signal (length, specific words) and missing context?
+
+**Why this matters:**
+
+The LLM can quickly spot patterns across 10+ examples that I might miss reviewing one by one. It's a pattern-finding aid, not a replacement for my own judgment. The final analysis and conclusions are still mine — the LLM just helps me see the data from a different angle.
+
+**Output:** A section in `evaluation_report.md` titled "Failure Mode Analysis" that includes:
+- 3–5 failure patterns identified (with LLM's suggested patterns noted)
+- Verification notes confirming each pattern against the actual test data
+- 3+ specific examples of wrong predictions with my own analysis of why they went wrong
+- A reflection on what the model learned vs. what I intended it to learn
+
+---
+
+### Disclosure Statement
+
+AI tools will be used in this project as follows:
+
+| Phase | Tool | Purpose | Human Oversight |
+|-------|------|---------|-----------------|
+| Label design | Claude / ChatGPT | Stress-testing label definitions with synthetic boundary cases | Full — I review each generated example and decide if definitions need revision |
+| Annotation | None | Manual annotation of all 200 examples | N/A — no AI assistance used |
+| Failure analysis | Claude / ChatGPT | Identifying patterns in misclassified predictions | Full — I verify all patterns against actual data and make final conclusions |
+| Code generation | None | All code written manually | N/A |
