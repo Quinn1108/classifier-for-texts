@@ -45,9 +45,9 @@ A good classification task requires clear, observable differences between catego
 
 ## Labels
 
-### Label 2: Lifestyle / General Interest
+### Label 1: Lifestyle / General Intereststyle / General Interest
 
-A post about everyday life, personal experiences, or general observations — these are glimpses into Joe Rogan's daily world rather than announcements, reactions, or promotional content. They focus on food, family, dogs, travel, restaurants, personal routines, or casual thoughts. The tone is reflective, appreciative, or simply observational.
+A post about everyday Lifestyle / General Interest, personal experiences, or general observations — these are glimpses into Joe Rogan's daily world rather than announcements, reactions, or promotional content. They focus on food, family, dogs, travel, restaurants, personal routines, or casual thoughts. The tone is reflective, appreciative, or simply observational.
 
 **Key signal:** Mentions daily activities — cooking, meals, specific restaurants, family members (marshallmaerogan), dogs, weather, travel, or personal routines. Uses descriptive language about food or experiences. No technical vocabulary. No promotional phrases ("available now," "new episode"). No fight terminology. Length varies but content is personal and relatable.
 
@@ -148,16 +148,15 @@ A post announcing a new JRE episode. These follow a predictable template: introd
 
 ### Data Source
 
-All data comes from the provided CSV file `joerogan_post_metadata.csv`, which contains ~200 Instagram captions from @joerogan's public posts.
+All data comes from the provided CSV file `joe_roegan_text_labeled - Sheet1.csv`, which contains ~200 Instagram captions from @joerogan's public posts.
 
 ### Sampling Strategy
 
 | Label | Target Count | Justification |
 |-------|-------------|---------------|
-| UFC / MMA | 60-70 | Joe Rogan's most frequent content type — fight commentary, event reactions, athlete shoutouts |
-| Politics / Social Commentary | 40-50 | Significant minority of posts — election commentary, policy opinions, advocacy |
-| Podcast Promotion | 50-60 | Formulaic announcements of new episodes |
-| Health / Biohacking / Lifestyle | 30-40 | Posts about plasma, hunting, cooking, diet, fitness |
+| Lifestyle / General Intereststyle / General Interest | 70-80 | Most common type — food, family, daily Lifestyle / General Interest, travel |
+| Politics / Social Commentary | 40-50 | Less frequent but significant — controversial topics get high engagement |
+| Podcast Promotion | 70-80 | Extremely frequent — formulaic episode announcements |
 
 **Total: ~200 examples**
 
@@ -315,7 +314,7 @@ I'll use the `classifier.py` pipeline with the zero-shot LLM (Llama-3.3-70B via 
 1. Run the fine-tuned DistilBERT model on the test set (30 examples)
 2. Collect all misclassified examples (the model's label + the true label)
 3. Feed the list of misclassifications to an LLM (Claude or ChatGPT) with the prompt:
-   > "Here are misclassified examples from a text classifier trained to label Joe Rogan Instagram posts as UFC/MMA, Politics/Social Commentary, Podcast Promotion, or Health/Biohacking/Lifestyle. For each, the model's prediction and the true label are shown. Identify 3–5 patterns or failure modes. Are certain labels consistently confused? Does the model rely on the wrong signals?"
+   > "Here are misclassified examples from a text classifier trained to label Joe Rogan Instagram posts as UFC/MMA, Politics/Social Commentary, Podcast Promotion, or Health/Biohacking/Lifestyle / General Intereststyle. For each, the model's prediction and the true label are shown. Identify 3–5 patterns or failure modes. Are certain labels consistently confused? Does the model rely on the wrong signals?"
 4. Use the LLM's identified patterns as a starting point for my own analysis
 5. Verify each pattern against the actual data:
    - Manually review 3–5 examples per pattern to confirm it exists
